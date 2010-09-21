@@ -1,0 +1,3 @@
+* The Makefiles need deps support added, they act all wonky when building
+* lv2/kammy needs to provide a patch management system for all other bins
+* Get filesystem stuff working
