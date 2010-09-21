@@ -11,8 +11,12 @@ LV2_EXPORT void* memcpy(void* dest, const void* src, size_t n);
 LV2_EXPORT void* memset(void* s, int c, size_t n);
 LV2_EXPORT int memcmp(void *v1, void *v2, size_t n);
 
-LV2_EXPORT size_t strlen(const char* s);
+LV2_EXPORT char *strcat(char *destination, const char *source);
+LV2_EXPORT char *strchr(const char* str, char chr);
 LV2_EXPORT char* strcpy(char* dest, const char* src);
+LV2_EXPORT char *strncpy(char *destination, const char *source, size_t num);
+LV2_EXPORT size_t strlen(const char* s);
+LV2_EXPORT int strcmp(const char *s1, const char *s2);
 LV2_EXPORT int strncmp(const char* s1, const char* s2, size_t n);
 
 // stdio.h
