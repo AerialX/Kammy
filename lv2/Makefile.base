@@ -1,0 +1,63 @@
+SYMBOLFILE	:= kammy.S
+LINKFILE	:= kammy.x
+INCLUDE		+= . ../libkammy/include $(SOURCE)
+MAPFILE		:= $(BUILDDIR)/kammy.map
+TEXTBASE	:= 0xFAC3B01000000000
+
+CFLAGS		:= -nodefaultlibs -nostdlib -m64 \
+			   -fno-builtin -fno-exceptions \
+			   -Os -Wall $(foreach dir,$(INCLUDE),-I$(dir)) \
+			   -DLV2
+CXXFLAGS	:= $(CFLAGS) -fno-rtti
+CFLAGS		+= --std=gnu99
+LDFLAGS		:= -L. -s -T $(LINKFILE) \
+			   -Ttext $(TEXTBASE) \
+			   -Map $(MAPFILE) --no-demangle
+
+CC			:= ppu-gcc
+CXX			:= ppu-g++
+LD			:= ppu-ld
+OBJCOPY		:= ppu-objcopy
+XXD			:= xxd -r -p
+
+CFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.c)))
+CXXFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.cpp)))
+OFILES		:= $(CFILES:%.c=$(BUILDDIR)/%.o) \
+			   $(CXXFILES:%.cpp=$(BUILDDIR)/%.o) \
+			   $(SYMBOLFILE:%.S=$(BUILDDIR)/%.o) \
+			   $(BUILDDIR)/crt0.o
+
+all: $(TARGET)
+
+clean:
+	rm -rf $(TARGET) $(BUILDDIR) $(OFILES)
+
+objdump: $(TARGET)
+	@ppu-objdump -D -EB -b binary -m powerpc:common64 $(BUILDDIR)/$(TARGET)
+
+builddir:
+	@mkdir -p $(BUILDDIR)
+
+$(OFILES): builddir
+
+$(BUILDDIR)/%.o: $(foreach dir,$(SOURCE),$(dir)/%.c)
+	$(CC) -c $(CFLAGS) $< -o $@
+
+$(BUILDDIR)/%.o: $(foreach dir,$(SOURCE),$(dir)/%.cpp)
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+
+$(BUILDDIR)/%.o: %.S
+	$(CC) -c $< -o $@
+
+$(BUILDDIR)/crt0.o: crt0.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+$(TARGET): $(OFILES)
+	$(LD) $(LDFLAGS) $(OFILES) -o $(BUILDDIR)/$@
+	@echo 1337baad00000020 | xxd -r -p > $@
+	@awk '/^ +0x[0-9a-z]+ +_start$$/ {print $$1}' $(MAPFILE) | $(XXD) >> $@
+	@awk '/^\.text +0x[0-9a-z]+ +0x[0-9a-z]+$$/ {print $$2}' $(MAPFILE) | $(XXD) >> $@
+	@awk '/^\.bss +0x[0-9a-z]+ +0x[0-9a-z]+$$/ {print $$2}' $(MAPFILE) | $(XXD) >> $@
+	@cat $(BUILDDIR)/$@ >> $@
+
+.PHONY: builddir clean all

@@ -1,0 +1,5 @@
+TARGET		:= kammy.bin
+SOURCE		:= kammy
+BUILDDIR	:= kammy/build
+
+include Makefile.base
