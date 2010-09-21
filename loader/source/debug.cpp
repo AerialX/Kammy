@@ -24,23 +24,23 @@ bool Debug_Connect()
 	if (sys_net_initialize_network() < 0)
 		return false;
 	struct sockaddr_in stSockAddr;
-    int Res;
 	SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
- 
-    memset(&stSockAddr, 0, sizeof stSockAddr);
- 
-    stSockAddr.sin_family = AF_INET;
-    stSockAddr.sin_port = htons(DEBUG_PORT);
-    Res = inet_pton(AF_INET, DEBUG_IP, &stSockAddr.sin_addr);
- 
-    connect(SocketFD, (struct sockaddr *)&stSockAddr, sizeof stSockAddr);
+
+	memset(&stSockAddr, 0, sizeof stSockAddr);
+
+	stSockAddr.sin_family = AF_INET;
+	stSockAddr.sin_port = htons(DEBUG_PORT);
+	inet_pton(AF_INET, DEBUG_IP, &stSockAddr.sin_addr);
+
+	connect(SocketFD, (struct sockaddr *)&stSockAddr, sizeof stSockAddr);
+	return true;
 }
 
 void Debug_Disconnect()
 {
-    shutdown(SocketFD, SHUT_RDWR);
+	shutdown(SocketFD, SHUT_RDWR);
  
-    close(SocketFD);
+	close(SocketFD);
 	
 	sys_net_finalize_network();
 	cellSysmoduleUnloadModule(CELL_SYSMODULE_NET);

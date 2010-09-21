@@ -22,6 +22,12 @@ LV2_FUNC(strncmp, 0x4D344)
 LV2_FUNC(printf, 0x28A654)
 LV2_FUNC(snprintf, 0x04E4D8)
 
+LV2_FUNC(fsOpen, 0x2AB290)
+LV2_FUNC(fsRead, 0x2AB234)
+LV2_FUNC(fsWrite, 0x2AB1A0)
+LV2_FUNC(fsSeek, 0x2AA9F4)
+LV2_FUNC(fsClose, 0x2AB0F8)
+
 LV2_FUNC(alloc, 0x62088)
 LV2_FUNC(free, 0x624C8)
 LV2_FUNC(panic, 0x288568)
