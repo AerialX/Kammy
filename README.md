@@ -4,7 +4,7 @@ Kammy
 Kammy is a system for loading patches to lv2 (PlayStation 3's Game OS) from
 a user application, using PSGroove or any other implementation of the
 exploit that adds the peek/poke syscalls. Kammy was inspired by Treeki's
-Kamek Wii game patching system.
+Nintendo Wii game patching system, Kamek.
 
 **Until an open-source SDK is released, Sony SDK tools must be used to
 build Kammy. This makes the distribution of any Kammy binaries illegal at
@@ -42,14 +42,15 @@ PSGroove fork's apploader payload.
 Customizing
 -----------
 Kammy is made up of two main components:
+
 * lv2: This folder contains the lv2 patches to be built. See the main kammy
   patch for an example. It is up to the patch to apply any hooks needed to
   lv2.
 * libkammy: This is the basic library that handles the loading of Kammy
   patches.
 
-The loader folder contains an example of using libkammy to load a patch from
-the lv2 folder.
+The loader/ folder contains an example of using libkammy to load a patch
+from the lv2 folder.
 
 
 Notes
