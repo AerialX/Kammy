@@ -50,21 +50,20 @@ static inline u64 Lv2Syscall(u64 syscall,
 	register u64 p8 asm("10") = param8;
 	asm volatile("stdu %%r1, -0x80(%%r1)"::);
 #ifdef LV2 // Within lv2, we have to branch to the entry directly.
-	register u64 table asm("11") = SYSCALL_TABLE + syscall * 8;
-	asm volatile(" \
-			std	%%r2, 0x70(%%r1); \
-			ld	%%r11, 0x00(%%r11); \
-			ld	%%r2, 0x08(%%r11); \
-			ld	%%r11, 0x00(%%r11); \
-			mtctr %%r11; \
-			bctrl; \
-			ld	%%r2, 0x70(%%r1); \
-		"
+	register u64 table asm("11") = *(u64*)(SYSCALL_TABLE + syscall * 8);
+	asm volatile(
+			"std %%r2, 0x70(%%r1);"
+			"ld	%%r2, 0x08(%%r11);"
+			"ld	%%r0, 0x00(%%r11);"
+			"ld	%%r11, 0x10(%%r11);"
+			"mtctr %%r0;"
+			"bctrl;"
+			"ld	%%r2, 0x70(%%r1);"
 		: "=r"(p1), "=r"(p2), "=r"(p3), "=r"(p4),
 		  "=r"(p5), "=r"(p6), "=r"(p7), "=r"(p8), "=r"(table)
 		: "r"(p1), "r"(p2), "r"(p3), "r"(p4),
 		  "r"(p5), "r"(p6), "r"(p7), "r"(p8), "r"(table)
-		: "0", "2", "12", "lr", "ctr", "xer", "cr0", "cr1", "cr5", "cr6", "cr7", "memory");
+		: "0", "12", "lr", "ctr", "xer", "cr0", "cr1", "cr5", "cr6", "cr7", "memory");
 #else
 	register u64 n  __asm__ ("11") = syscall;
 	asm volatile("sc"

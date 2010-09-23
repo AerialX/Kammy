@@ -1,6 +1,6 @@
-SYMBOLFILE	:= kammy.S
-LINKFILE	:= kammy.x
-INCLUDE		+= . ../libkammy/include $(SOURCE)
+SYMBOLFILE	:= common/kammy.S
+LINKFILE	:= common/kammy.x
+INCLUDE		+= common ../libkammy/include $(SOURCE)
 MAPFILE		:= $(BUILDDIR)/kammy.map
 TEXTBASE	:= 0xFAC3B01000000000
 
@@ -24,7 +24,7 @@ CFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.c)))
 CXXFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.cpp)))
 OFILES		:= $(CFILES:%.c=$(BUILDDIR)/%.o) \
 			   $(CXXFILES:%.cpp=$(BUILDDIR)/%.o) \
-			   $(SYMBOLFILE:%.S=$(BUILDDIR)/%.o) \
+			   $(SYMBOLFILE:common/%.S=$(BUILDDIR)/%.o) \
 			   $(BUILDDIR)/crt0.o
 
 all: $(TARGET)
@@ -46,10 +46,10 @@ $(BUILDDIR)/%.o: $(foreach dir,$(SOURCE),$(dir)/%.c)
 $(BUILDDIR)/%.o: $(foreach dir,$(SOURCE),$(dir)/%.cpp)
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-$(BUILDDIR)/%.o: %.S
+$(BUILDDIR)/%.o: common/%.S
 	$(CC) -c $< -o $@
 
-$(BUILDDIR)/crt0.o: crt0.c
+$(BUILDDIR)/crt0.o: common/crt0.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(TARGET): $(OFILES)
