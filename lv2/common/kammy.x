@@ -13,4 +13,9 @@ SECTIONS {
 		*(.fini)
 		__text_end  = . ;
 	}
+	.bss : {
+		__bss_start = . ;
+		*(.bss)
+		__bss_end = . ;
+	}
 }

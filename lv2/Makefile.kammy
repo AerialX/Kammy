@@ -1,5 +1,6 @@
 TARGET		:= kammy.bin
 SOURCE		:= kammy
 BUILDDIR	:= kammy/build
+CFLAGS		:= -DKAMMY
 
 include Makefile.base

@@ -6,10 +6,9 @@ LIBDIRS		:= ../libkammy
 LIBS		:= kammy sysmodule_stub netctl_stub net_stub
 
 LV2DIR		:= ../lv2
-LV2BINS		:= kammy.bin
+LV2BINS		:= ethdebug.bin
 
-INCLUDE		+= build $(foreach dir,$(LIBDIRS),$(dir)/include)
-#CFLAGS		:= -nodefaultlibs -nostdlib -m64
+INCLUDE		+= $(BUILDDIR) $(foreach dir,$(LIBDIRS),$(dir)/include)
 CFLAGS		:= -mp32 -DBIG_ENDIAN -DBYTE_ORDER \
 			   -fno-builtin -fno-exceptions \
 			   -Os -Wall $(foreach dir,$(INCLUDE),-I$(dir))
@@ -22,44 +21,44 @@ LDFLAGS		:= -s \
 
 HOST_CC		:= gcc
 
-CC			:= ppu-lv2-gcc
-CXX			:= ppu-lv2-g++
-LD			:= ppu-lv2-g++
 #CC			:= ppu-gcc
 #CXX			:= ppu-g++
 #LD			:= ppu-ld
+CC			:= ppu-lv2-gcc
+CXX			:= ppu-lv2-g++
+LD			:= ppu-lv2-g++
 FSELF		:= make_fself
+RAW2H		:= ../raw2h/raw2h
 
-CFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.c)))
-CXXFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.cpp)))
+CFILES		:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.c))
+CXXFILES	:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.cpp))
 OFILES		:= $(CFILES:%.c=$(BUILDDIR)/%.o) \
-			   $(CXXFILES:%.cpp=$(BUILDDIR)/%.o) \
-			   $(SYMBOLFILE:%.S=$(BUILDDIR)/%.o)
+			   $(CXXFILES:%.cpp=$(BUILDDIR)/%.o)
 
 all: builddir $(TARGET).self
 
 clean:
-	rm -rf $(TARGET).self $(TARGET).elf $(BUILDDIR) $(OFILES) raw2h
+	rm -rf $(TARGET).self $(TARGET).elf $(BUILDDIR) $(OFILES)
 
 install: $(TARGET).self
-	ps3install $(TARGET).self
+	@echo "[INS] $<"
+	@ps3install $(TARGET).self
 
 builddir:
-	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(BUILDDIR) $(foreach dir,$(SOURCE),$(BUILDDIR)/$(dir))
 
-raw2h: raw2h.c
-	$(HOST_CC) $< -o $@
+$(RAW2H):
+	make -C ../raw2h
 
-$(OFILES): raw2h $(LV2BINS:%.bin=$(BUILDDIR)/%.h)
+$(OFILES): $(RAW2H) $(LV2BINS:%.bin=$(BUILDDIR)/%.h)
 
-$(BUILDDIR)/%.o: $(foreach dir,$(SOURCE),$(dir)/%.c)
-	$(CC) -c $(CFLAGS) $< -o $@
+$(BUILDDIR)/%.o: %.c
+	@echo "[CC]  $<"
+	@$(CC) -c $(CFLAGS) $< -o $@
 
-$(BUILDDIR)/%.o: $(foreach dir,$(SOURCE),$(dir)/%.cpp)
-	$(CXX) -c $(CXXFLAGS) $< -o $@
-
-$(BUILDDIR)/%.o: %.S
-	$(CC) -c $< -o $@
+$(BUILDDIR)/%.o: %.cpp
+	@echo "[CXX] $<"
+	@$(CXX) -c $(CXXFLAGS) $< -o $@
 
 $(foreach bin,$(LV2BINS),$(LV2DIR)/$(bin)):
 	make -C $(LV2DIR)
@@ -68,10 +67,12 @@ $(foreach bin,$(LV2BINS),$(LV2DIR)/$(bin)):
 	make -C ../libkammy
 
 $(BUILDDIR)/%.h: $(LV2DIR)/%.bin
-	./raw2h $< $(BUILDDIR)/$(notdir $<).h $(notdir $(basename $<)_bin)
+	@echo "[R2H] $<"
+	@$(RAW2H) $< $(BUILDDIR)/$(notdir $<).h $(notdir $(basename $<)_bin)
 
 $(TARGET).elf: $(OFILES) ../libkammy/libkammy.a
-	$(LD) $(OFILES) $(LDFLAGS) -o $@
+	@echo "[LD]  $@"
+	@$(LD) $(OFILES) $(LDFLAGS) -o $@
 
 $(TARGET).self: $(TARGET).elf
-	$(FSELF) $(TARGET).elf $@
+	@$(FSELF) $(TARGET).elf $@

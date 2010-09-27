@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  fi = fopen(argv[1], "r");
+  fi = fopen(argv[1], "rb");
   if (fi == NULL) {
     perror(argv[1]);
     return 1;
@@ -51,6 +51,5 @@ int main(int argc, char **argv)
 
   fclose(fi);
   fclose(fo);
-  fprintf(stdout, "Header generated.\n");
   return 0;
 }

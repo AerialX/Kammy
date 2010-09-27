@@ -2,7 +2,11 @@
 
 #include <sys.h>
 
+#ifdef LV2
+
 typedef u64 size_t;
+
+#define ALIGNED(x) __attribute__((aligned(x)))
 
 #ifdef __cplusplus
 #define LV2_EXPORT extern "C" __attribute__((longcall))
@@ -34,7 +38,6 @@ LV2_EXPORT void dealloc(void* ptr, int unk);
 LV2_EXPORT void panic(int unk);
 
 // misc
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -46,4 +49,6 @@ inline void* operator new(size_t size) { return malloc(size); }
 inline void* operator new[](size_t size) { return malloc(size); }
 inline void operator delete(void* ptr) { return free(ptr); }
 inline void operator delete[](void* ptr) { return free(ptr); }
+#endif
+
 #endif

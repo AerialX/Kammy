@@ -49,7 +49,7 @@ typedef struct {
 } FsUtime;
 
 #define LV2_STDIO static inline __attribute__ ((unused)) s32
-LV2_STDIO fsOpen(const char* path, s32 mode, FsFile* fd, const void* unk, u64 size) { return Lv2Syscall(801, (u64)path, mode, (u64)fd, (u64)unk, size); }
+LV2_STDIO fsOpen(const char* path, s32 oflags, FsFile* fd, u64 unk, const void* arg, u64 argsize) { return Lv2Syscall(801, (u64)path, oflags, (u64)fd, unk, (u64)arg, argsize); }
 LV2_STDIO fsRead(FsFile fd, void* buf, u64 size, u64* read) { return Lv2Syscall(802, fd, (u64)buf, size, (u64)read); }
 LV2_STDIO fsWrite(FsFile fd, const void* buf, u64 size, u64* written) { return Lv2Syscall(803, fd, (u64)buf, size, (u64)written); }
 LV2_STDIO fsClose(FsFile fd) { return Lv2Syscall(804, fd); }

@@ -1,10 +1,10 @@
-SYMBOLFILE	:= common/kammy.S
 LINKFILE	:= common/kammy.x
 INCLUDE		+= common ../libkammy/include $(SOURCE)
 MAPFILE		:= $(BUILDDIR)/kammy.map
 TEXTBASE	:= 0xFAC3B01000000000
+SOURCE		+= common
 
-CFLAGS		:= -nodefaultlibs -nostdlib -m64 \
+CFLAGS		+= -nodefaultlibs -nostdlib -m64 \
 			   -fno-builtin -fno-exceptions \
 			   -Os -Wall $(foreach dir,$(INCLUDE),-I$(dir)) \
 			   -DLV2
@@ -20,12 +20,12 @@ LD			:= ppu-ld
 OBJCOPY		:= ppu-objcopy
 XXD			:= xxd -r -p
 
-CFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.c)))
-CXXFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.cpp)))
+CFILES		:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.c))
+CXXFILES	:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.cpp))
+SFILES		:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.S))
 OFILES		:= $(CFILES:%.c=$(BUILDDIR)/%.o) \
 			   $(CXXFILES:%.cpp=$(BUILDDIR)/%.o) \
-			   $(SYMBOLFILE:common/%.S=$(BUILDDIR)/%.o) \
-			   $(BUILDDIR)/crt0.o
+			   $(SFILES:%.S=$(BUILDDIR)/%.o) \
 
 all: $(TARGET)
 
@@ -36,28 +36,29 @@ objdump: $(TARGET)
 	@ppu-objdump -D -EB -b binary -m powerpc:common64 $(BUILDDIR)/$(TARGET)
 
 builddir:
-	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(BUILDDIR) $(foreach dir,$(SOURCE),$(BUILDDIR)/$(dir))
 
 $(OFILES): builddir
 
-$(BUILDDIR)/%.o: $(foreach dir,$(SOURCE),$(dir)/%.c)
-	$(CC) -c $(CFLAGS) $< -o $@
+$(BUILDDIR)/%.o: %.c
+	@echo "[CC]  $<"
+	@$(CC) -c $(CFLAGS) $< -o $@
 
-$(BUILDDIR)/%.o: $(foreach dir,$(SOURCE),$(dir)/%.cpp)
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+$(BUILDDIR)/%.o: %.cpp
+	@echo "[CXX] $<"
+	@$(CXX) -c $(CXXFLAGS) $< -o $@
 
-$(BUILDDIR)/%.o: common/%.S
-	$(CC) -c $< -o $@
-
-$(BUILDDIR)/crt0.o: common/crt0.c
-	$(CC) -c $(CFLAGS) $< -o $@
+$(BUILDDIR)/%.o: %.S
+	@echo "[CC]  $<"
+	@$(CC) -c $< -o $@
 
 $(TARGET): $(OFILES)
-	$(LD) $(LDFLAGS) $(OFILES) -o $(BUILDDIR)/$@
+	@echo "[LD]  $@"
+	@$(LD) $(LDFLAGS) $(OFILES) -o $(BUILDDIR)/$@
 	@echo 1337baad00000020 | xxd -r -p > $@
-	@awk '/^ +0x[0-9a-z]+ +_start$$/ {print $$1}' $(MAPFILE) | $(XXD) >> $@
+	@awk '/^ +0x[0-9a-z]+ +start$$/ {print $$1}' $(MAPFILE) | $(XXD) >> $@
 	@awk '/^\.text +0x[0-9a-z]+ +0x[0-9a-z]+$$/ {print $$2}' $(MAPFILE) | $(XXD) >> $@
-	@awk '/^\.bss +0x[0-9a-z]+ +0x[0-9a-z]+$$/ {print $$2}' $(MAPFILE) | $(XXD) >> $@
+	@awk '/^ +0x[0-9a-z]+ +__bss_end = \.$$/ {print $$1}' $(MAPFILE) | $(XXD) >> $@
 	@cat $(BUILDDIR)/$@ >> $@
 
 .PHONY: builddir clean all

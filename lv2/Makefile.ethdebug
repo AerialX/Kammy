@@ -1,0 +1,5 @@
+TARGET		:= ethdebug.bin
+SOURCE		:= ethdebug
+BUILDDIR	:= ethdebug/build
+
+include Makefile.base
