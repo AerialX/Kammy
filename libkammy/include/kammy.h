@@ -1,3 +1,5 @@
+#pragma once
+
 #include <sys.h>
 
 #define LIBKAMMY_VERSION "0.1"

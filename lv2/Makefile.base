@@ -52,13 +52,19 @@ $(BUILDDIR)/%.o: %.S
 	@echo "[CC]  $<"
 	@$(CC) -c $< -o $@
 
+
+GET_MAIN = '/^ +0x[0-9a-z]+ +_start$$/ {print $$1}'
+GET_TEXT = '/^\.text +0x[0-9a-z]+ +0x[0-9a-z]+$$/ {print $$2}'
+GET_BSS_END = '/^ +0x[0-9a-z]+ +__bss_end = \.$$/ {print $$1}'
+GET_BSS_START = '/^ +0x[0-9a-z]+ +__bss_start = \.$$/ {print $$1}'
 $(TARGET): $(OFILES)
 	@echo "[LD]  $@"
 	@$(LD) $(LDFLAGS) $(OFILES) -o $(BUILDDIR)/$@
-	@echo 1337baad00000020 | xxd -r -p > $@
-	@awk '/^ +0x[0-9a-z]+ +start$$/ {print $$1}' $(MAPFILE) | $(XXD) >> $@
-	@awk '/^\.text +0x[0-9a-z]+ +0x[0-9a-z]+$$/ {print $$2}' $(MAPFILE) | $(XXD) >> $@
-	@awk '/^ +0x[0-9a-z]+ +__bss_end = \.$$/ {print $$1}' $(MAPFILE) | $(XXD) >> $@
+	@echo 1337baad00000020 | $(XXD) > $@
+	@awk $(GET_MAIN) $(MAPFILE) | $(XXD) >> $@
+	@awk $(GET_TEXT) $(MAPFILE) | $(XXD) >> $@
+	@awk $(GET_BSS_END) $(MAPFILE) | $(XXD) >> $@
 	@cat $(BUILDDIR)/$@ >> $@
+	@dd bs=1 count="`calc \`awk $(GET_BSS_END) $(MAPFILE)\` - \`awk $(GET_BSS_START) $(MAPFILE)\` + 0x10`" if=/dev/zero >> $@ 2> /dev/null
 
 .PHONY: builddir clean all

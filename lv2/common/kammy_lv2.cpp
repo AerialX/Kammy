@@ -37,4 +37,14 @@ void Kammy_HookBranch(KAMMY_PTR branch, KAMMY_PTR func, bool lr)
 	Lv2Syscall(KAMMY_SYSCALL, KAMMY_SUBCALL_HOOK_BRANCH, (u64)branch, (u64)func, lr);
 }
 
+s64 Kammy_HookSubcall(u64 subcall, KAMMY_PTR func)
+{
+	return Lv2Syscall(KAMMY_SYSCALL, KAMMY_SUBCALL_HOOK_SUBCALL, subcall, (u64)func);
+}
+
+u64 Kammy_CallSubcall(u64 subcall, u64 param1, u64 param2, u64 param3, u64 param4, u64 param5, u64 param6)
+{
+	return Lv2Syscall(KAMMY_SYSCALL, KAMMY_SUBCALL_CALL_SUBCALL, subcall, param1, param2, param3, param4, param5, param6);
+}
+
 #endif

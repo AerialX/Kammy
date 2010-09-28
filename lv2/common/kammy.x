@@ -7,7 +7,9 @@ SECTIONS {
 		__text_start = . ;
 		*(.init)
 		*(.text)
+		__ctors_start = . ;
 		*(.ctors)
+		__ctors_end = . ;
 		*(.dtors)
 		*(.rodata)
 		*(.fini)

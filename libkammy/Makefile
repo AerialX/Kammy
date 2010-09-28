@@ -21,7 +21,7 @@ CXX			:= ppu-lv2-g++
 AR			:= ppu-lv2-ar
 RAW2H		:= ../raw2h/raw2h
 
-CFILES		:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.c))
+#CFILES		:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.c))
 CXXFILES	:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.cpp))
 OFILES		:= $(CFILES:%.c=$(BUILDDIR)/%.o) \
 			   $(CXXFILES:%.cpp=$(BUILDDIR)/%.o)

@@ -9,7 +9,12 @@ Subcall SubcallTable[] = {
 	(Subcall)Kammy_Execute,
 	(Subcall)Kammy_Memcpy,
 	(Subcall)Kammy_HookSyscall,
-	(Subcall)Kammy_HookBranch
+	(Subcall)Kammy_HookBranch,
+	(Subcall)Kammy_HookSubcall,
+	(Subcall)Kammy_CallSubcall,
+	(Subcall)Kammy_GetModules,
+	(Subcall)Kammy_UnloadModule,
+	(Subcall)Kammy_RegisterModule
 };
 
 u64 Kammy_Handler(u64 subcall, u64 param1, u64 param2, u64 param3, u64 param4, u64 param5, u64 param6, u64 param7)
@@ -45,11 +50,13 @@ u64 Kammy_Execute(void* addr, u64 param1, u64 param2, u64 param3, u64 param4, u6
 }
 
 void RemoveMemoryProtection();
+void __Init_Module();
 
-extern "C" u64 _start()
+extern "C" u64 start()
 {
 	RemoveMemoryProtection();
 	Kammy_HookSyscall(KAMMY_SYSCALL, (void*)Kammy_Handler);
+	__Init_Module();
 	return Kammy_Version();
 }
 

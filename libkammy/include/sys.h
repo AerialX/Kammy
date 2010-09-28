@@ -2,7 +2,10 @@
 
 #include <stdint.h>
 
+#ifndef NULL
 #define NULL 0
+#endif
+
 typedef int8_t				s8;
 typedef uint8_t				u8;
 typedef int16_t				s16;

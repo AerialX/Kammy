@@ -6,6 +6,7 @@ extern u32 Kammy_Stub_End;
 static void __Kammy_CreateHook(u32* stub32, u64 func)
 {
 	memcpy(stub32, &Kammy_Stub, (&Kammy_Stub_End - &Kammy_Stub) * 4);
+	stub32[0] = Kammy_Stub;
 	stub32 += &Kammy_Stub_Address - &Kammy_Stub;
 	stub32[0] |= ((func >> 48) & 0xFFFF);
 	stub32[1] |= ((func >> 32) & 0xFFFF);
@@ -34,3 +35,4 @@ void Kammy_HookBranch(void* branch, void* ptr, bool lr)
 
 	*(u32*)branch = 0x48000000 | ((u64)stub32 - (u64)branch) | (lr ? 1 : 0);
 }
+

@@ -24,7 +24,6 @@ u32 __memprotcpy[] = {
 };
 
 #define __memprotcpycount 2
-u8 __memprotcpybak[__memprotcpycount][sizeof(__memprotcpy)];
 u64 __memprotcpyaddr[__memprotcpycount] = {
 	0x800000000000e050,	// protmemcpy_chkdest
 	0x800000000000e26c	// protmemcpy_chksrc
@@ -34,14 +33,8 @@ u64 __memprotcpyaddr[__memprotcpycount] = {
 void RemoveMemoryProtection()
 {
 	for (int i = 0; i < __memprotcpycount; i++) {
-		memcpy(__memprotcpybak[i], (void*)__memprotcpyaddr[i], sizeof(__memprotcpy));
 		__memprotcpy[__memprotcpy_bl] = 0x48000001 | (u32)(MEMCPY - (__memprotcpyaddr[i] + __memprotcpy_bl * 4));
 		memcpy((void*)__memprotcpyaddr[i], __memprotcpy, sizeof(__memprotcpy));
 	}
 //	*(u32*)0x800000000006D834 = 0x4e800020; // Partially a problem
-}
-void RestoreMemoryProtection()
-{
-	for (int i = 0; i < __memprotcpycount; i++)
-		memcpy((void*)__memprotcpyaddr[i], __memprotcpybak[i], sizeof(__memprotcpy));
 }

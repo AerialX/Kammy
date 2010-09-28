@@ -6,22 +6,17 @@ a user application, using PSGroove or any other implementation of the
 exploit that adds the peek/poke syscalls. Kammy was inspired by Treeki's
 Nintendo Wii game patching system, Kamek.
 
-**Until an open-source SDK is released, Sony SDK tools must be used to
-build Kammy. This makes the distribution of any Kammy binaries illegal at
-this time.**
-
-
 Building
 --------
-Building Kammy requires three different gcc compiler toolchains.
+Building Kammy requires different gcc compiler toolchains.
 
 * gcc: A normal host gcc is required to build the raw2h application.
-* ppu-lv2-gcc: Used to compile the loader, only available from Sony.
 * ppu-gcc, ppu-binutils: A version of gcc that will compile 64bit PowerPC
   instructions is required to build the patches. Linux packages can be found
   on [BSC.es](http://www.bsc.es/plantillaH.php?cat_id=461).
   (note: ppu-lv2-gcc may suffice for this, untested)
 * xxd: Creating patch bin files requires the xxd tool to be installed.
+* dd: Also required for building the patch bin files.
 
 With these dependencies installed, you can build Kammy by simply cd'ing to
 the *loader* directory and running:
@@ -55,5 +50,5 @@ from the lv2 folder.
 
 Notes
 -----
-Internally, Kammy obliderates syscalls 8 and 9, so try not to run it with
-payloads that provide those syscalls (like my debug payload).
+Internally, Kammy obliderates syscall 11, so try not to run it with
+payloads that provide that syscall.
