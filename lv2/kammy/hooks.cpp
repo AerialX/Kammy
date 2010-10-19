@@ -25,7 +25,7 @@ void Kammy_HookSyscall(u32 syscall, void* ptr)
 	
 	__Kammy_CreateHook(stub32, (u64)ptr);
 	
-	((u64*)SYSCALL_TABLE)[syscall] = (u64)stub64;
+	((u64*)LV2_SYSCALL_TABLE)[syscall] = (u64)stub64;
 }
 
 void Kammy_HookBranch(void* branch, void* ptr, bool lr)

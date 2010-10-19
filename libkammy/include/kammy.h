@@ -1,6 +1,6 @@
 #pragma once
 
-#include <sys.h>
+#include <psl1ght/lv2.h>
 
 #define LIBKAMMY_VERSION "0.1"
 #define LIBKAMMY_MAGIC 0x1337baad

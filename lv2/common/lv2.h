@@ -1,6 +1,6 @@
 #pragma once
 
-#include <sys.h>
+#include <psl1ght/lv2.h>
 
 #ifdef LV2
 

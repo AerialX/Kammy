@@ -1,7 +1,12 @@
+#include <psl1ght/lv2.h>
+
 #include "kammy.h"
 #include "kammy_lv2.h"
 
 #include "kammy.bin.h"
+
+#define ROUND_UP(p, round) \
+		((p + round - 1) & ~(round - 1))
 
 // lv2 retail 3.41 addresses
 #define LV2_ALLOC			0x8000000000062088ULL
@@ -66,7 +71,7 @@ bool Lv2Module::ExecuteInternal(u64* ret) const
 		return false;
 	
 	// Uses poke to create a new alloc syscall //
-	u64 addr = SyscallPeek(SYSCALL_TABLE + 8 * KAMMY_SYSCALL);
+	u64 addr = SyscallPeek(LV2_SYSCALL_TABLE + 8 * KAMMY_SYSCALL);
 	if (!addr || addr == 0x8001003)
 		return false; // Peek/poke not implemented
 	addr = SyscallPeek(addr);
@@ -79,7 +84,7 @@ bool Lv2Module::ExecuteInternal(u64* ret) const
 		return false;
 	SyscallPoke(address, *(u64*)Data);
 	RelocateMemcpy(address, (u64*)Data, size, TextBase, address);
-	SyscallPoke(SYSCALL_TABLE + 8 * KAMMY_SYSCALL, (MainEntry - TextBase) + address);
+	SyscallPoke(LV2_SYSCALL_TABLE + 8 * KAMMY_SYSCALL, (MainEntry - TextBase) + address);
 	// HACK: The hypervisor doesn't obey the opd rtoc, so we have to pass it
 	value = Lv2Syscall(KAMMY_SYSCALL, *(u64*)(Data + (MainEntry - TextBase) + 8) - TextBase + address);
 	if (ret)

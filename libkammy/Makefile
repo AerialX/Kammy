@@ -1,59 +1,62 @@
-TARGET		:= libkammy.a
-SOURCE		:= source ../lv2/common
-INCLUDE		:= include ../lv2/common
-BUILDDIR	:= build
+.SUFFIXES:
+ifeq ($(strip $(PSL1GHT)),)
+$(error "PSL1GHT must be set in the environment.")
+endif
 
-LV2DIR		:= ../lv2
-LV2BINS		:= kammy.bin
+include $(PSL1GHT)/Makefile.base
 
-CFLAGS		:= -nodefaultlibs -nostdlib -m64 \
-			   -fno-builtin -fno-exceptions \
-			   -Os -Wall $(foreach dir,$(INCLUDE),-I$(dir)) \
-			   -I$(BUILDDIR)
-CXXFLAGS	:= $(CFLAGS) -fno-rtti
-CFLAGS		+= --std=gnu99
+TARGET		:=	$(notdir $(CURDIR))
+BUILD		:=	build
+SOURCE		:=	source
+LV2SOURCE	:=	../lv2/common
+INCLUDE		:=	include ../lv2/common
+DATA		:=	data
+LIBS		:=	
 
-#CC			:= ppu-gcc
-#CXX			:= ppu-g++
-#AR			:= ppu-ar
-CC			:= ppu-lv2-gcc
-CXX			:= ppu-lv2-g++
-AR			:= ppu-lv2-ar
-RAW2H		:= ../raw2h/raw2h
+CFLAGS		+= -g -O2 -Wall
 
-#CFILES		:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.c))
-CXXFILES	:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.cpp))
-OFILES		:= $(CFILES:%.c=$(BUILDDIR)/%.o) \
-			   $(CXXFILES:%.cpp=$(BUILDDIR)/%.o)
+ifneq ($(BUILD),$(notdir $(CURDIR)))
 
-all: builddir $(TARGET)
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export VPATH	:=	$(foreach dir,$(SOURCE),$(CURDIR)/$(dir)) \
+					$(foreach dir,$(LV2SOURCE),$(CURDIR)/$(dir)) \
+					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+export BUILDDIR	:=	$(CURDIR)/$(BUILD)
+export DEPSDIR	:=	$(BUILDDIR)
 
-$(OFILES): $(RAW2H) $(LV2BINS:%.bin=$(BUILDDIR)/%.h)
+CFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.c)))
+CXXFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.cpp))) \
+			   $(foreach dir,$(LV2SOURCE),$(notdir $(wildcard $(dir)/*.cpp)))
+SFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.S)))
+BINFILES	:= $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.bin)))
+
+export OFILES	:=	$(CFILES:.c=.o) \
+					$(CXXFILES:.cpp=.o) \
+					$(SFILES:.S=.o)
+
+export BINFILES	:=	$(BINFILES:.bin=.bin.h)
+
+export INCLUDES	:=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
+					-I$(CURDIR)/$(BUILD)
+
+.PHONY: $(BUILD) clean
+
+$(BUILD):
+	@[ -d $@ ] || mkdir -p $@
+	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 clean:
-	rm -rf $(TARGET) $(BUILDDIR) lv2
+	@echo Clean...
+	@rm -rf $(BUILD) $(OUTPUT).{elf,self,a}
 
-builddir:
-	@mkdir -p $(BUILDDIR) $(foreach dir,$(SOURCE),$(BUILDDIR)/$(dir))
+else
 
-$(RAW2H):
-	make -C ../raw2h
+DEPENDS	:= $(OFILES:.o=.d)
 
-$(BUILDDIR)/%.o: %.c
-	@echo "[CC]  $<"
-	@$(CC) -c $(CFLAGS) $< -o $@
+$(OUTPUT).a: $(OFILES)
 
-$(BUILDDIR)/%.o: %.cpp
-	@echo "[CXX] $<"
-	@$(CXX) -c $(CXXFLAGS) $< -o $@
+$(OFILES): $(BINFILES)
 
-$(foreach bin,$(LV2BINS),$(LV2DIR)/$(bin)):
-	make -C $(LV2DIR)
+-include $(DEPENDS)
 
-$(BUILDDIR)/%.h: $(LV2DIR)/%.bin
-	@echo "[R2H] $<"
-	@$(RAW2H) $< $(BUILDDIR)/$(notdir $<).h $(notdir $(basename $<)_bin)
-
-$(TARGET): $(OFILES)
-	@echo "[AR]  $@"
-	@$(AR) rcs $@ $(OFILES)
+endif

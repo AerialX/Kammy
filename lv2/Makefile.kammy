@@ -1,6 +1,96 @@
-TARGET		:= kammy.bin
-SOURCE		:= kammy
-BUILDDIR	:= kammy/build
-CFLAGS		:= -DKAMMY
+.SUFFIXES:
+ifeq ($(strip $(PSL1GHT)),)
+$(error "PSL1GHT must be set in the environment.")
+endif
 
-include Makefile.base
+include $(PSL1GHT)/Makefile.base
+
+MAKEFILE	:=	kammy
+TARGET		:=	$(MAKEFILE).bin
+TARGETS		:=	../libkammy/data/$(TARGET)
+BUILD		:=	$(MAKEFILE)/build
+DATA		:=	$(MAKEFILE)/data
+LINKFILE	:=	common/kammy.x
+SOURCE		:=	$(MAKEFILE) common
+INCLUDE		:=	$(SOURCE)
+MAPFILE		:=	$(BUILD)/$(MAKEFILE).map
+TEXTBASE	:=	0xFAC3B01000000000
+LIBS		:=	
+
+CFLAGS		+= -nodefaultlibs -nostdlib -m64 \
+			   -fno-builtin -fno-exceptions \
+			   -Os -Wall \
+			   -DLV2 -DKAMMY
+CXXFLAGS	:= $(CFLAGS) -fno-rtti
+CFLAGS		+= --std=gnu99
+LDFLAGS		:= -L. -s -T $(LINKPATH) \
+			   -Ttext $(TEXTBASE) \
+			   -Map $(MAPPATH) --no-demangle
+
+XXD			:= xxd -r -p
+
+ifneq ($(notdir $(BUILD)),$(notdir $(CURDIR)))
+
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export OUTPUTS	:=	$(foreach dir,$(TARGETS),$(CURDIR)/$(dir))
+export VPATH	:=	$(foreach dir,$(SOURCE),$(CURDIR)/$(dir)) \
+					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+export BUILDDIR	:=	$(CURDIR)/$(BUILD)
+export DEPSDIR	:=	$(BUILDDIR)
+export LINKPATH	:=	$(CURDIR)/$(LINKFILE)
+export MAPPATH	:=	$(CURDIR)/$(MAPFILE)
+
+CFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.c)))
+CXXFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.cpp)))
+SFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.S)))
+BINFILES	:= $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.bin)))
+
+export OFILES	:=	$(CFILES:.c=.o) \
+					$(CXXFILES:.cpp=.o) \
+					$(SFILES:.S=.o)
+
+export BINFILES	:=	$(BINFILES:.bin=.bin.h)
+
+export INCLUDES	:=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
+					-I$(CURDIR)/$(BUILD)
+
+.PHONY: $(BUILD) clean
+
+$(BUILD):
+	@[ -d $@ ] || mkdir -p $@
+	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.$(MAKEFILE)
+
+objdump: $(OUTPUT)
+	@ppu-objdump -D -EB -b binary -m powerpc:common64 $(BUILD)/$(TARGET)
+
+clean:
+	@echo Clean...
+	@rm -rf $(BUILD) $(OUTPUT) $(OUTPUTS)
+
+else
+
+DEPENDS	:= $(OFILES:.o=.d)
+
+ifneq ($(OUTPUTS),)
+$(OUTPUTS): $(OUTPUT)
+	@cp $< $@
+endif
+
+GET_MAIN = '/^ +0x[0-9a-z]+ +_start$$/ {print $$1}'
+GET_TEXT = '/^\.text +0x[0-9a-z]+ +0x[0-9a-z]+$$/ {print $$2}'
+GET_BSS_END = '/^ +0x[0-9a-z]+ +__bss_end = \.$$/ {print $$1}'
+GET_BSS_START = '/^ +0x[0-9a-z]+ +__bss_start = \.$$/ {print $$1}'
+$(OUTPUT): $(OFILES)
+	@echo "[LD]  $@"
+	@$(LD) $(LDFLAGS) $(OFILES) -o $(BUILDDIR)/$(TARGET)
+	@echo 1337baad00000020 | $(XXD) > $@
+	@awk $(GET_MAIN) $(MAPPATH) | $(XXD) >> $@
+	@awk $(GET_TEXT) $(MAPPATH) | $(XXD) >> $@
+	@awk $(GET_BSS_END) $(MAPPATH) | $(XXD) >> $@
+	@cat $(BUILDDIR)/$(TARGET) >> $@
+	@dd bs=1 count="`calc \`awk $(GET_BSS_END) $(MAPPATH)\` - \`awk $(GET_BSS_START) $(MAPPATH)\` + 0x10`" if=/dev/zero >> $@ 2> /dev/null
+$(OFILES):
+
+-include $(DEPENDS)
+
+endif
