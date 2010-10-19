@@ -2,8 +2,8 @@
 
 #include <stdarg.h>
 
-#include <netex/net.h>
 #include <cell/sysmodule.h>
+#include <netex/net.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -16,6 +16,8 @@
 #define DEBUG_IP "192.168.1.13"
 #define DEBUG_PORT 1100
 
+#define DEBUG
+#ifdef DEBUG
 static int SocketFD;
 bool Debug_Connect()
 {
@@ -55,3 +57,13 @@ void Debug_Print(const char* fmt, ...)
 	va_end(arg);
 	send(SocketFD, buffer, strlen(buffer), 0);
 }
+#else
+bool Debug_Connect()
+{
+	return true;
+}
+
+void Debug_Print(const char* fmt, ...) { }
+
+void Debug_Disconnect() { }
+#endif

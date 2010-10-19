@@ -21,6 +21,7 @@ LV2_FUNC(strncmp, 0x4D344)
 
 LV2_FUNC(printf, 0x28A654)
 LV2_FUNC(snprintf, 0x04E4D8)
+LV2_FUNC(sprintf, 0x04E56C)
 
 /* lv2 internal, do not work!
 LV2_FUNC(fsOpen, 0x2AB290)

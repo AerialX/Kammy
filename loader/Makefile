@@ -1,9 +1,9 @@
 TARGET		:= loader
 SOURCE		:= source
-INCLUDE		:= include $(CELL_SDK)/target/ppu/include
+INCLUDE		:= include $(CELL_SDK)/target/ppu/include ../lv2
 BUILDDIR	:= build
 LIBDIRS		:= ../libkammy
-LIBS		:= kammy sysmodule_stub netctl_stub net_stub
+LIBS		:= kammy sysmodule_stub netctl_stub net_stub fs_stub
 
 LV2DIR		:= ../lv2
 LV2BINS		:= ethdebug.bin
