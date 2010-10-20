@@ -39,12 +39,13 @@ export INCLUDES	:=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
 .PHONY: $(BUILD) clean
 
 $(BUILD):
+	@make --no-print-directory -C ../libkammy
 	@[ -d $@ ] || mkdir -p $@
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 clean:
 	@echo Clean...
-	@rm -rf $(BUILD) $(OUTPUT).{elf,self,a}
+	@rm -rf $(BUILD) $(OUTPUT)elf $(OUTPUT).self
 
 else
 

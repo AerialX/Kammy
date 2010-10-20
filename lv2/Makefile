@@ -1,4 +1,4 @@
-LV2BINS		:= kammy r3volution ethdebug
+LV2BINS		:= kammy ethdebug
 
 LV2CLEAN	:= $(foreach bin,$(LV2BINS),$(bin)\ clean)
 LV2OBJDUMP	:= $(foreach bin,$(LV2BINS),$(bin)\ objdump)

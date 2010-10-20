@@ -16,7 +16,7 @@ struct Lv2opd
 	u64 Address;
 	u64 TableOfContents;
 	u64 Reserved;
-};
+} __attribute__((__packed__));
 
 struct Lv2Module
 {
@@ -44,4 +44,4 @@ struct Lv2Module
 	{
 		return (const Lv2opd*)(Data + (MainEntry - TextBase));
 	}
-};
+} __attribute__((__packed__));

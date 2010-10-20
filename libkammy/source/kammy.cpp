@@ -1,5 +1,7 @@
 #include <psl1ght/lv2.h>
 
+#include <stdio.h>
+
 #include "kammy.h"
 #include "kammy_lv2.h"
 
@@ -31,11 +33,15 @@ static u64 SyscallPeek(u64 address)
 
 bool Kammy_IsInitialised()
 {
-	return (Kammy_Version() & KAMMY_VERSION_MASK) == (KAMMY_VERSION & KAMMY_VERSION_MASK);
+	printf("Kammy_IsInitialized(): ");
+	u64 version = Kammy_Version();
+	printf("%016llx\n", version);
+	return (version & KAMMY_VERSION_MASK) == (KAMMY_VERSION & KAMMY_VERSION_MASK);
 }
 
 bool Kammy_Initialise()
 {
+	printf("Kammy_Initialize()\n");
 //	if (Kammy_IsInitialized())
 //		return true;
 
@@ -56,6 +62,7 @@ const Lv2Module* Kammy_Load(const void* data)
 
 static void RelocateMemcpy(u64 dest, u64* data, u32 size, u64 base, u64 newbase)
 {
+	printf("RelocateMemcpy(0x%016llx, 0x%016llx, 0x%08x, 0x%016llx, 0x%016llx)\n", dest, data, size, base, newbase);
 	for (u32 i = 0; i < size / 8; i++) {
 		u64 value = data[i];
 		if ((value & 0xFFFFFFFF00000000ULL) == base)
@@ -67,13 +74,16 @@ static void RelocateMemcpy(u64 dest, u64* data, u32 size, u64 base, u64 newbase)
 
 bool Lv2Module::ExecuteInternal(u64* ret) const
 {
+	printf("Lv2Module::ExecuteInternal()\n");
 	if (!Verify())
 		return false;
 	
 	// Uses poke to create a new alloc syscall //
 	u64 addr = SyscallPeek(LV2_SYSCALL_TABLE + 8 * KAMMY_SYSCALL);
-	if (!addr || addr == 0x8001003)
-		return false; // Peek/poke not implemented
+	if (!addr || addr == 0x8001003) {
+		printf("\tError! Peek and poke not implemented.\n");
+		return false;
+	}
 	addr = SyscallPeek(addr);
 	u64 value = (0x48000000ULL | (LV2_ALLOC - addr)) << 32; // b alloc
 	SyscallPoke(addr, value);
@@ -94,6 +104,7 @@ bool Lv2Module::ExecuteInternal(u64* ret) const
 
 bool Lv2Module::Execute(u64* ret, u64 param1, u64 param2, u64 param3, u64 param4, u64 param5, u64 param6) const
 {
+	printf("Lv2Module::Execute()\n");
 	if (!Verify())
 		return false;
 	u32 size = ROUND_UP(GetDataSize(), 0x08);
