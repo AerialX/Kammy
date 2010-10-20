@@ -60,9 +60,6 @@ extern "C" int main(int argc, char** argv)
 
 	Debug_Print("Aaand we're done for tonight folks.\n");
 
-	u64 lol = Lv2Syscall(363);
-	Debug_Print("lolpsn: %016llx\n", lol);
-
 	Debug_Disconnect();
 
 	return 0;
