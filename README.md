@@ -47,7 +47,7 @@ This setup has three requirements to work properly:
 3. Your PC must have the socat program installed, so you can run the
    following command:
 
-    socat udp-recv:18194 stdout
+        socat udp-recv:18194 stdout
 
 
 Customizing
