@@ -17,6 +17,9 @@ CFLAGS		+= -g -O2 -Wall
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 
+.PHONY: $(BUILD) clean
+
+export OUTDIR	:=  $(CURDIR)
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
 export VPATH	:=	$(foreach dir,$(SOURCE),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(LV2SOURCE),$(CURDIR)/$(dir)) \
@@ -28,7 +31,8 @@ CFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.c)))
 CXXFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.cpp))) \
 			   $(foreach dir,$(LV2SOURCE),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.S)))
-BINFILES	:= $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.bin)))
+BINFILES	:= $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.bin))) \
+			   kammy.bin
 
 export OFILES	:=	$(CFILES:.c=.o) \
 					$(CXXFILES:.cpp=.o) \
@@ -38,11 +42,9 @@ export BINFILES	:=	$(BINFILES:.bin=.bin.h)
 
 export INCLUDES	:=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
 					-I$(CURDIR)/$(BUILD)
-
-.PHONY: $(BUILD) clean
-
-$(BUILD):
+$(BUILD):	
 	@[ -d $@ ] || mkdir -p $@
+	@make --no-print-directory -C ../lv2 -f Makefile.kammy
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 clean:

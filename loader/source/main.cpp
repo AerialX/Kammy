@@ -48,8 +48,18 @@ extern "C" int main(int argc, char** argv)
 		return 0;
 	}
 	
+	// Want to see this debug info?
+	// 1) The PS3 must be connected to a router/computer via ethernet cable.
+	//    If wireless is enabled it won't work.
+	// 2) Be on the same network/router/etc as the PS3
+	// 3) Install socat on your PC, and run the following command:
+	//    socat udp-recv:18194 stdout
 	LoadModule(ethdebug_bin, "ethdebug.bin");
-	printf("This should be a TTY_WRITE test.\n");
+	printf("This is a ttyWrite test, should show up over UDP broascast.\n");
+
+	// After this hook is installed it will stay in place as long as
+	// the PS3 stays on. Great for getting printfs from other PSL1GHT
+	// apps.
 
 	printf("Aaand we're done for tonight folks.\n");
 

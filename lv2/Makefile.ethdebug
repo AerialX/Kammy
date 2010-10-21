@@ -17,7 +17,7 @@ MAPFILE		:=	$(BUILD)/$(MAKEFILE).map
 TEXTBASE	:=	0xFAC3B01000000000
 LIBS		:=	
 
-CFLAGS		+= -nodefaultlibs -nostdlib -m64 \
+CFLAGS		+= -nodefaultlibs -nostdlib \
 			   -fno-builtin -fno-exceptions \
 			   -Os -Wall \
 			   -DLV2

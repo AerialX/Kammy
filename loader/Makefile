@@ -25,7 +25,8 @@ export DEPSDIR	:=	$(BUILDDIR)
 CFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.c)))
 CXXFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.S)))
-BINFILES	:= $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.bin)))
+BINFILES	:= $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.bin))) \
+			   ethdebug.bin
 
 export OFILES	:=	$(CFILES:.c=.o) \
 					$(CXXFILES:.cpp=.o) \
@@ -39,8 +40,9 @@ export INCLUDES	:=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
 .PHONY: $(BUILD) clean
 
 $(BUILD):
-	@make --no-print-directory -C ../libkammy
 	@[ -d $@ ] || mkdir -p $@
+	@make --no-print-directory -C ../libkammy
+	@make --no-print-directory -C ../lv2 -f Makefile.ethdebug
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 clean:
