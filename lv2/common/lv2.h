@@ -1,6 +1,6 @@
 #pragma once
 
-#include <sys.h>
+#include <psl1ght/lv2.h>
 
 #ifdef LV2
 
@@ -31,7 +31,6 @@ LV2_EXPORT int strncmp(const char* s1, const char* s2, size_t n);
 LV2_EXPORT int printf(const char *format, ...);
 LV2_EXPORT int snprintf(char *str, long unsigned int size, const char *format, ...);
 LV2_EXPORT int sprintf(char *str, const char *format, ...);
-#include "lv2_stdio.h"
 
 // lv2
 LV2_EXPORT __attribute__((malloc)) void* alloc(size_t size, int unk);

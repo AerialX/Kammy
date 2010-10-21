@@ -141,7 +141,7 @@ s64 debug_init(void)
 	return 0;
 }
 
-s64 debug_printf(const char *fmt, ...)
+s64 debug_printf(const char* fmt, ...)
 {
 	va_list ap;
 
@@ -151,9 +151,17 @@ s64 debug_printf(const char *fmt, ...)
 	va_start(ap, fmt);
 	size_t msgsize = _vsnprintf(pmsg, MAX_MESSAGE_SIZE, fmt, ap);
 	va_end(ap);
-//	strncpy(pmsg, fmt, MAX_MESSAGE_SIZE);
-//	pmsg[MAX_MESSAGE_SIZE - 1] = '\0';
-//	size_t msgsize = strlen(pmsg);
+
+	return debug_print(NULL, msgsize);
+}
+
+s64 debug_print(const char* buffer, size_t msgsize)
+{
+	if (msgsize > MAX_MESSAGE_SIZE)
+		msgsize = MAX_MESSAGE_SIZE;
+
+	if (buffer)
+		memcpy(pmsg, buffer, msgsize);
 
 	dbg->descr.buf_size = header_size + msgsize;
 	h_ip->total_length = msgsize + sizeof(struct udphdr) + sizeof(struct iphdr);

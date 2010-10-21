@@ -10,7 +10,8 @@ see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #define DEBUG_H
 
 s64 debug_init(void);
-s64 debug_printf(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+s64 debug_printf(const char* fmt, ...) __attribute__ ((format (printf, 1, 2)));
+s64 debug_print(const char* buffer, size_t size);
 
 void fatal(const char *msg) __attribute__((noreturn));
 void abort(void) __attribute__((noreturn));

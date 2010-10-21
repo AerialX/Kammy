@@ -7,7 +7,7 @@
 
 int ttyWriteHook(int channel, const char* message, int length, int* written)
 {
-	debug_printf("%s", message);
+	debug_print(message, length);
 	if (written)
 		*written = length;
 	return 0;

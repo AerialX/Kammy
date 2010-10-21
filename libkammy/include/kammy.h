@@ -1,6 +1,6 @@
 #pragma once
 
-#include <sys.h>
+#include <psl1ght/lv2.h>
 
 #define LIBKAMMY_VERSION "0.1"
 #define LIBKAMMY_MAGIC 0x1337baad
@@ -16,7 +16,7 @@ struct Lv2opd
 	u64 Address;
 	u64 TableOfContents;
 	u64 Reserved;
-};
+} __attribute__((__packed__));
 
 struct Lv2Module
 {
@@ -44,4 +44,4 @@ struct Lv2Module
 	{
 		return (const Lv2opd*)(Data + (MainEntry - TextBase));
 	}
-};
+} __attribute__((__packed__));

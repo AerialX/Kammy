@@ -1,7 +1,14 @@
+#include <psl1ght/lv2.h>
+
+#include <stdio.h>
+
 #include "kammy.h"
 #include "kammy_lv2.h"
 
 #include "kammy.bin.h"
+
+#define ROUND_UP(p, round) \
+		((p + round - 1) & ~(round - 1))
 
 // lv2 retail 3.41 addresses
 #define LV2_ALLOC			0x8000000000062088ULL
@@ -16,12 +23,12 @@
 
 static void SyscallPoke(u64 address, u64 value)
 {
-	Lv2Syscall(SYSCALL_POKE, address, value);
+	Lv2Syscall2(SYSCALL_POKE, address, value);
 }
 
 static u64 SyscallPeek(u64 address)
 {
-	return Lv2Syscall(SYSCALL_PEEK, address);
+	return Lv2Syscall1(SYSCALL_PEEK, address);
 }
 
 bool Kammy_IsInitialised()
@@ -31,8 +38,8 @@ bool Kammy_IsInitialised()
 
 bool Kammy_Initialise()
 {
-//	if (Kammy_IsInitialized())
-//		return true;
+	if (Kammy_IsInitialised())
+		return true;
 
 	const Lv2Module* kammy = Kammy_Load(kammy_bin);
 	if (!kammy)
@@ -66,22 +73,24 @@ bool Lv2Module::ExecuteInternal(u64* ret) const
 		return false;
 	
 	// Uses poke to create a new alloc syscall //
-	u64 addr = SyscallPeek(SYSCALL_TABLE + 8 * KAMMY_SYSCALL);
-	if (!addr || addr == 0x8001003)
-		return false; // Peek/poke not implemented
+	u64 addr = SyscallPeek(LV2_SYSCALL_TABLE + 8 * KAMMY_SYSCALL);
+	if (!addr || addr == 0x8001003) {
+		fprintf(stderr, "\tError! Peek and poke not implemented.\n");
+		return false;
+	}
 	addr = SyscallPeek(addr);
-	u64 value = (0x48000000ULL | (LV2_ALLOC - addr)) << 32; // b alloc
+	u64 value = (0x48000000ULL | ((LV2_ALLOC - addr) & 0x0BFFFFFF)) << 32; // b alloc
 	SyscallPoke(addr, value);
 	
 	u32 size = ROUND_UP(GetDataSize(), 0x08);
-	u64 address = Lv2Syscall(KAMMY_SYSCALL, size, 0x27);
+	u64 address = Lv2Syscall2(KAMMY_SYSCALL, size, 0x27);
 	if (!address || address == 0x8001003)
 		return false;
 	SyscallPoke(address, *(u64*)Data);
 	RelocateMemcpy(address, (u64*)Data, size, TextBase, address);
-	SyscallPoke(SYSCALL_TABLE + 8 * KAMMY_SYSCALL, (MainEntry - TextBase) + address);
+	SyscallPoke(LV2_SYSCALL_TABLE + 8 * KAMMY_SYSCALL, (MainEntry - TextBase) + address);
 	// HACK: The hypervisor doesn't obey the opd rtoc, so we have to pass it
-	value = Lv2Syscall(KAMMY_SYSCALL, *(u64*)(Data + (MainEntry - TextBase) + 8) - TextBase + address);
+	value = Lv2Syscall1(KAMMY_SYSCALL, *(u64*)(Data + (MainEntry - TextBase) + 8) - TextBase + address);
 	if (ret)
 		*ret = value;
 	return true;

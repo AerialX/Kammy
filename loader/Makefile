@@ -1,78 +1,63 @@
-TARGET		:= loader
-SOURCE		:= source
-INCLUDE		:= include $(CELL_SDK)/target/ppu/include ../lv2
-BUILDDIR	:= build
-LIBDIRS		:= ../libkammy
-LIBS		:= kammy sysmodule_stub netctl_stub net_stub fs_stub
+.SUFFIXES:
+ifeq ($(strip $(PSL1GHT)),)
+$(error "PSL1GHT must be set in the environment.")
+endif
 
-LV2DIR		:= ../lv2
-LV2BINS		:= ethdebug.bin
+include $(PSL1GHT)/Makefile.base
 
-INCLUDE		+= $(BUILDDIR) $(foreach dir,$(LIBDIRS),$(dir)/include)
-CFLAGS		:= -mp32 -DBIG_ENDIAN -DBYTE_ORDER \
-			   -fno-builtin -fno-exceptions \
-			   -Os -Wall $(foreach dir,$(INCLUDE),-I$(dir))
-CXXFLAGS	:= $(CFLAGS) -fno-rtti
-CFLAGS		+= --std=gnu99
-LDFLAGS		:= -s \
-			   $(foreach dir,$(LIBDIRS),-L$(dir)) \
-			   $(foreach lib,$(LIBS),-l$(lib)) \
-			   -L$(CELL_SDK)/target/ppu/lib -static
+TARGET		:=	$(notdir $(CURDIR))
+BUILD		:=	build
+SOURCE		:=	source
+INCLUDE		:=	include ../libkammy/include ../lv2
+DATA		:=	data
+LIBS		:=	../../libkammy/libkammy.a
 
-HOST_CC		:= gcc
+CFLAGS		+= -g -O2 -Wall
 
-#CC			:= ppu-gcc
-#CXX			:= ppu-g++
-#LD			:= ppu-ld
-CC			:= ppu-lv2-gcc
-CXX			:= ppu-lv2-g++
-LD			:= ppu-lv2-g++
-FSELF		:= make_fself
-RAW2H		:= ../raw2h/raw2h
+ifneq ($(BUILD),$(notdir $(CURDIR)))
 
-CFILES		:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.c))
-CXXFILES	:= $(foreach dir,$(SOURCE),$(wildcard $(dir)/*.cpp))
-OFILES		:= $(CFILES:%.c=$(BUILDDIR)/%.o) \
-			   $(CXXFILES:%.cpp=$(BUILDDIR)/%.o)
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export VPATH	:=	$(foreach dir,$(SOURCE),$(CURDIR)/$(dir)) \
+					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+export BUILDDIR	:=	$(CURDIR)/$(BUILD)
+export DEPSDIR	:=	$(BUILDDIR)
 
-all: builddir $(TARGET).self
+CFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.c)))
+CXXFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.cpp)))
+SFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.S)))
+BINFILES	:= $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.bin))) \
+			   ethdebug.bin
+
+export OFILES	:=	$(CFILES:.c=.o) \
+					$(CXXFILES:.cpp=.o) \
+					$(SFILES:.S=.o)
+
+export BINFILES	:=	$(BINFILES:.bin=.bin.h)
+
+export INCLUDES	:=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
+					-I$(CURDIR)/$(BUILD)
+
+.PHONY: $(BUILD) clean
+
+$(BUILD):
+	@[ -d $@ ] || mkdir -p $@
+	@make --no-print-directory -C ../libkammy
+	@make --no-print-directory -C ../lv2 -f Makefile.ethdebug
+	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 clean:
-	rm -rf $(TARGET).self $(TARGET).elf $(BUILDDIR) $(OFILES)
+	@echo Clean...
+	@rm -rf $(BUILD) $(OUTPUT).elf $(OUTPUT).self
 
-install: $(TARGET).self
-	@echo "[INS] $<"
-	@ps3install $(TARGET).self
+else
 
-builddir:
-	@mkdir -p $(BUILDDIR) $(foreach dir,$(SOURCE),$(BUILDDIR)/$(dir))
+DEPENDS	:= $(OFILES:.o=.d)
 
-$(RAW2H):
-	make -C ../raw2h
+$(OUTPUT).self: $(OUTPUT).elf
+$(OUTPUT).elf: $(OFILES)
 
-$(OFILES): $(RAW2H) $(LV2BINS:%.bin=$(BUILDDIR)/%.h)
+$(OFILES): $(BINFILES)
 
-$(BUILDDIR)/%.o: %.c
-	@echo "[CC]  $<"
-	@$(CC) -c $(CFLAGS) $< -o $@
+-include $(DEPENDS)
 
-$(BUILDDIR)/%.o: %.cpp
-	@echo "[CXX] $<"
-	@$(CXX) -c $(CXXFLAGS) $< -o $@
-
-$(foreach bin,$(LV2BINS),$(LV2DIR)/$(bin)):
-	make -C $(LV2DIR)
-
-../libkammy/libkammy.a:
-	make -C ../libkammy
-
-$(BUILDDIR)/%.h: $(LV2DIR)/%.bin
-	@echo "[R2H] $<"
-	@$(RAW2H) $< $(BUILDDIR)/$(notdir $<).h $(notdir $(basename $<)_bin)
-
-$(TARGET).elf: $(OFILES) ../libkammy/libkammy.a
-	@echo "[LD]  $@"
-	@$(LD) $(OFILES) $(LDFLAGS) -o $@
-
-$(TARGET).self: $(TARGET).elf
-	@$(FSELF) $(TARGET).elf $@
+endif
