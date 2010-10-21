@@ -18,8 +18,8 @@ toolchains. Besides PSL1GHT, you will need the following utilities:
 With these dependencies installed, you can build Kammy by simply cd'ing to
 the *loader* directory and running:
 
-    make clean
-    make
+        make clean
+        make
 
 
 Usage
@@ -28,7 +28,7 @@ Kammy must be used with a payload that supports poke/peek. This includes
 PSGroove and most of its forks - including my own - among others. To apply a
 Kammy patch, a loader application must be started on the PS3. This is
 usually done from XMB from an installed package, or from USB using my
-PSGroove fork's apploader payload (or PL3's payload_dev)._
+PSGroove fork's apploader payload (or PL3's payload_dev).
 
 ### Ethernet Debug Example
 The example loader included in Kammy installs a hook into lv2 that sends
@@ -48,6 +48,9 @@ This setup has three requirements to work properly:
    following command:
 
         socat udp-recv:18194 stdout
+
+A ready-to-run pre-compiled ethernet debug loader is provided in the
+[Downloads Section](http://github.com/AerialX/Kammy/downloads).
 
 
 Customizing
