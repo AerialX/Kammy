@@ -11,10 +11,11 @@ public:
 	typedef T& Reference;
 protected:
 	u64 size;
+	u64 allocated;
 	T* Internal;
 public:
-	List() : size(0), Internal(NULL) { }
-	List(u64 size) : size(0), Internal(NULL) { Allocate(size); }
+	List() : size(0), allocated(0), Internal(NULL) { }
+	List(u64 size) : size(0), allocated(0), Internal(NULL) { Allocate(size); }
 	~List() { Clear(); }
 
 	List(const List& list) { Add(list.Begin(), list.End()); }
@@ -32,22 +33,23 @@ public:
 		return *this;
 	}
 
-	void Allocate(u64 size) {
-		T* newinternal = new T[size];
-		if (Internal) {
-			if (this->size) {
-				for (u64 i = 0; i < MIN(this->size, size - 1); i++)
+	void Allocate(u64 newsize) {
+		if (newsize > allocated) {
+			T* newinternal = new T[newsize];
+			if (Internal) {
+				for (u64 i = 0; i < MIN(size, newsize); i++)
 					newinternal[i] = Internal[i];
+				delete[] Internal;
 			}
-			delete[] Internal;
+			Internal = newinternal;
+
+			allocated = newsize;
 		}
-		Internal = newinternal;
-		this->size = size;
 	}
 
 	Iterator Begin() { return Internal; }
 	Iterator End() { return Internal + size; }
-	Iterator Add(const T& item) { Allocate(++size); Internal[size - 1] = item; return End() - 1; }
+	Iterator Add(const T& item) { Allocate(size + 1); Internal[size] = item; size++; return End() - 1; }
 	Iterator Add(Iterator begin, Iterator end) {
 		for (; begin != end; begin++)
 			Add(*begin);
@@ -56,7 +58,7 @@ public:
 	void Remove(Iterator);
 	void Remove(u64 index);
 
-	void Clear() { delete[] Internal; size = 0; Internal = NULL; }
+	void Clear() { if (Internal) delete[] Internal; size = 0; allocated = 0; Internal = NULL; }
 
 	u64 Size() { return size; }
 
