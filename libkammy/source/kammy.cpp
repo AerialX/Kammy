@@ -78,9 +78,7 @@ bool Lv2Module::ExecuteInternal(u64* ret) const
 		fprintf(stderr, "\tError! Peek and poke not implemented.\n");
 		return false;
 	}
-	addr = SyscallPeek(addr);
-	u64 value = (0x48000000ULL | ((LV2_ALLOC - addr) & 0x0BFFFFFF)) << 32; // b alloc
-	SyscallPoke(addr, value);
+	SyscallPoke(addr, LV2_ALLOC);
 	
 	u32 size = ROUND_UP(GetDataSize(), 0x08);
 	u64 address = Lv2Syscall2(KAMMY_SYSCALL, size, 0x27);
