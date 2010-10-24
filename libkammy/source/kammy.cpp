@@ -88,7 +88,7 @@ bool Lv2Module::ExecuteInternal(u64* ret) const
 	RelocateMemcpy(address, (u64*)Data, size, TextBase, address);
 	SyscallPoke(LV2_SYSCALL_TABLE + 8 * KAMMY_SYSCALL, (MainEntry - TextBase) + address);
 	// HACK: The hypervisor doesn't obey the opd rtoc, so we have to pass it
-	value = Lv2Syscall1(KAMMY_SYSCALL, *(u64*)(Data + (MainEntry - TextBase) + 8) - TextBase + address);
+	u64 value = Lv2Syscall1(KAMMY_SYSCALL, *(u64*)(Data + (MainEntry - TextBase) + 8) - TextBase + address);
 	if (ret)
 		*ret = value;
 	return true;
