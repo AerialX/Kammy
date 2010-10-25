@@ -13,6 +13,7 @@ DATA		:=	data
 LIBS		:=	../../libkammy/libkammy.a
 
 CFLAGS		+= -g -O2 -Wall
+CXXFLAGS	+= -g -O2 -Wall
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 
@@ -54,7 +55,7 @@ else
 DEPENDS	:= $(OFILES:.o=.d)
 
 $(OUTPUT).self: $(OUTPUT).elf
-$(OUTPUT).elf: $(OFILES)
+$(OUTPUT).elf: $(OFILES) ../../libkammy/libkammy.a
 
 $(OFILES): $(BINFILES)
 

@@ -14,6 +14,7 @@ DATA		:=	data
 LIBS		:=	
 
 CFLAGS		+= -g -O2 -Wall
+CXXFLAGS	+= -g -O2 -Wall
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 

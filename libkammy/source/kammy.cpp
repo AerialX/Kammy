@@ -84,7 +84,6 @@ bool Lv2Module::ExecuteInternal(u64* ret) const
 	u64 address = Lv2Syscall2(KAMMY_SYSCALL, size, 0x27);
 	if (!address || address == 0x8001003)
 		return false;
-	SyscallPoke(address, *(u64*)Data);
 	RelocateMemcpy(address, (u64*)Data, size, TextBase, address);
 	SyscallPoke(LV2_SYSCALL_TABLE + 8 * KAMMY_SYSCALL, (MainEntry - TextBase) + address);
 	// HACK: The hypervisor doesn't obey the opd rtoc, so we have to pass it
