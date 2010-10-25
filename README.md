@@ -14,6 +14,8 @@ toolchains. Besides PSL1GHT, you will need the following utilities:
 
 * xxd: Creating patch bin files requires the xxd tool to be installed.
 * dd: Also required for building the patch bin files.
+* calc: Yet another requirement for building the patch bin files.
+  [Homepage](http://www.isthe.com/chongo/tech/comp/calc/).
 
 With these dependencies installed, you can build Kammy by simply cd'ing to
 the *loader* directory and running:
