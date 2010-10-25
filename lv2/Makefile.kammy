@@ -17,6 +17,8 @@ MAPFILE		:=	$(BUILD)/$(MAKEFILE).map
 TEXTBASE	:=	0xFAC3B01000000000
 LIBS		:=	
 
+LD			:=	ppu-ld
+
 CFLAGS		+= -nodefaultlibs -nostdlib -m64 \
 			   -fno-builtin -fno-exceptions \
 			   -Os -Wall \
@@ -70,6 +72,8 @@ clean:
 else
 
 DEPENDS	:= $(OFILES:.o=.d)
+
+$(BUILD): $(OUTPUTS)
 
 ifneq ($(OUTPUTS),)
 $(OUTPUTS): $(OUTPUT)
