@@ -11,7 +11,7 @@
 		((p + round - 1) & ~(round - 1))
 
 // lv2 retail 3.41 addresses
-#define LV2_ALLOC			0x8000000000062088ULL
+#define LV2_ALLOC			(void*)0x8000000000062088ULL
 #define KAMMY_RTOC_BASE		0x8000000000003000ULL
 
 // Some function that gets trashed by the payload already
@@ -21,14 +21,14 @@
 #define SYSCALL_PEEK		6
 #define SYSCALL_POKE		7
 
-static void SyscallPoke(u64 address, u64 value)
+static void SyscallPoke(void* address, u64 value)
 {
-	Lv2Syscall2(SYSCALL_POKE, address, value);
+	Lv2Syscall2(SYSCALL_POKE, (u64)address, value);
 }
 
-static u64 SyscallPeek(u64 address)
+static u64 SyscallPeek(void* address)
 {
-	return Lv2Syscall1(SYSCALL_PEEK, address);
+	return Lv2Syscall1(SYSCALL_PEEK, (u64)address);
 }
 
 bool Kammy_IsInitialised()
@@ -56,14 +56,14 @@ const Lv2Module* Kammy_Load(const void* data)
 	return (const Lv2Module*)data;
 }
 
-static void RelocateMemcpy(u64 dest, u64* data, u32 size, u64 base, u64 newbase)
+static void RelocateMemcpy(u64* dest, u64* data, u32 size, u64 base, void* newbase)
 {
 	for (u32 i = 0; i < size / 8; i++) {
 		u64 value = data[i];
 		if ((value & 0xFFFFFFFF00000000ULL) == base)
 //		if (value - base < size)
-			value = value - base + newbase;
-		SyscallPoke(dest + i * 8, value);
+			value = value - base + (u64)newbase;
+		SyscallPoke(dest + i, value);
 	}
 }
 
@@ -73,21 +73,21 @@ bool Lv2Module::ExecuteInternal(u64* ret) const
 		return false;
 	
 	// Uses poke to create a new alloc syscall //
-	u64 addr = SyscallPeek(LV2_SYSCALL_TABLE + 8 * KAMMY_SYSCALL);
-	if (!addr || addr == 0x8001003) {
+	u64* addr = (u64*)SyscallPeek((u64*)LV2_SYSCALL_TABLE + KAMMY_SYSCALL);
+	if (!addr || (u32)(u64)addr == 0x8001003) {
 		fprintf(stderr, "\tError! Peek and poke not implemented.\n");
 		return false;
 	}
-	SyscallPoke(addr, LV2_ALLOC);
+	SyscallPoke(addr, (u64)LV2_ALLOC);
 	
 	u32 size = ROUND_UP(GetDataSize(), 0x08);
-	u64 address = Lv2Syscall2(KAMMY_SYSCALL, size, 0x27);
-	if (!address || address == 0x8001003)
+	u64* address = (u64*)Lv2Syscall2(KAMMY_SYSCALL, size, 0x27);
+	if (!address || (u32)(u64)address == 0x8001003)
 		return false;
 	RelocateMemcpy(address, (u64*)Data, size, TextBase, address);
-	SyscallPoke(LV2_SYSCALL_TABLE + 8 * KAMMY_SYSCALL, (MainEntry - TextBase) + address);
+	SyscallPoke((u64*)LV2_SYSCALL_TABLE + KAMMY_SYSCALL, (MainEntry - TextBase) + (u64)address);
 	// HACK: The hypervisor doesn't obey the opd rtoc, so we have to pass it
-	u64 value = Lv2Syscall1(KAMMY_SYSCALL, *(u64*)(Data + (MainEntry - TextBase) + 8) - TextBase + address);
+	u64 value = Lv2Syscall1(KAMMY_SYSCALL, *(u64*)(Data + (MainEntry - TextBase) + 8) - TextBase + (u64)address);
 	if (ret)
 		*ret = value;
 	return true;
@@ -98,11 +98,11 @@ bool Lv2Module::Execute(u64* ret, u64 param1, u64 param2, u64 param3, u64 param4
 	if (!Verify())
 		return false;
 	u32 size = ROUND_UP(GetDataSize(), 0x08);
-	u64 address = Kammy_Alloc(size);
+	void* address = Kammy_Alloc(size);
 	if (!address)
 		return false;
-	RelocateMemcpy(address, (u64*)Data, size, TextBase, address);
-	u64 value = Kammy_Execute((MainEntry - TextBase) + address, param1, param2, param3, param4, param5, param6);
+	RelocateMemcpy((u64*)address, (u64*)Data, size, TextBase, address);
+	u64 value = Kammy_Execute((void*)((MainEntry - TextBase) + (u64)address), param1, param2, param3, param4, param5, param6);
 	if (ret)
 		*ret = value;
 	return true;

@@ -52,6 +52,15 @@ clean:
 	@echo Clean...
 	@rm -rf $(BUILD) $(OUTPUT).a
 
+install:
+	@echo "Installing into $(PS3DEV)/ppu..."
+	@cp $(OUTPUT).a $(PS3DEV)/ppu/lib/
+	@cp -r include $(PS3DEV)/ppu/
+	@cp ../lv2/common/kammy_lv2.h $(PS3DEV)/ppu/include/
+	@cp ../lv2/common/kammy.x $(PS3DEV)/ppu/lib/
+	@mkdir -p $(PS3DEV)/ppu/include/kammy
+	@cp ../lv2/common/lv2.h $(PS3DEV)/ppu/include/kammy/
+
 else
 
 DEPENDS	:= $(OFILES:.o=.d)

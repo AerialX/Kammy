@@ -1,4 +1,5 @@
 #include "kammy_lv2.h"
+#include "lv2.h"
 
 extern u32 Kammy_Stub;
 extern u32 Kammy_Stub_Address;
@@ -33,6 +34,6 @@ void Kammy_HookBranch(void* branch, void* ptr, bool lr)
 	u32* stub32 = (u32*)malloc(0x60);
 	__Kammy_CreateHook(stub32, (u64)ptr);
 
-	*(u32*)branch = 0x48000000 | ((u64)stub32 - (u64)branch) | (lr ? 1 : 0);
+	*(u32*)branch = 0x48000000 | (((u64)stub32 - (u64)branch) & 0x0BFFFFFC) | (lr ? 1 : 0);
 }
 

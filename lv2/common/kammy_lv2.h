@@ -1,16 +1,12 @@
 #pragma once
 
-#include "lv2.h"
+#include <psl1ght/lv2.h>
 
 #define KAMMY_VERSION		0x4A33100000000001ULL
 #define KAMMY_VERSION_MASK	0xFFFFFFFF00000000ULL
 #define KAMMY_SYSCALL		11
 
-#ifdef LV2
 #define KAMMY_PTR void*
-#else
-#define KAMMY_PTR u64
-#endif
 
 enum {
 	KAMMY_ERROR_OK = 0,
