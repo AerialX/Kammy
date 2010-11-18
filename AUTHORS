@@ -1,2 +1,8 @@
 Main Author
 Aaron Lindsay <aaron@aaronlindsay.com>
+
+ethdebug - Adapted from AsbestOS stage2 
+Hector Martin <hector@marcansoft.com>
+
+graf - Adapted from graf_chokolo's PSGroove payload
+https://github.com/grafchokolo/psgroove
