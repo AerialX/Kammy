@@ -12,7 +12,8 @@
 
 // lv2 retail 3.41 addresses
 #define LV2_ALLOC			(void*)0x8000000000062088ULL
-#define KAMMY_RTOC_BASE		0x8000000000003000ULL
+#define KAMMY_RTOC_BASE		(void*)0x8000000000003000ULL
+#define KAMMY_RTOC			0x800000000033E720ULL
 
 // Some function that gets trashed by the payload already
 #define KAMMY_HACK_BASE		0x800000000004ED28ULL
@@ -71,6 +72,11 @@ bool Lv2Module::ExecuteInternal(u64* ret) const
 {
 	if (!Verify())
 		return false;
+
+	if (SyscallPeek(KAMMY_RTOC_BASE) != KAMMY_RTOC) {
+		fprintf(stderr, "\tError! Kammy only works on retail 3.41.\n");
+		return false;
+	}
 	
 	// Uses poke to create a new alloc syscall //
 	u64* addr = (u64*)SyscallPeek((u64*)LV2_SYSCALL_TABLE + KAMMY_SYSCALL);
