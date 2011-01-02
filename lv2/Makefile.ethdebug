@@ -7,7 +7,7 @@ include $(PSL1GHT)/Makefile.base
 
 MAKEFILE	:=	ethdebug
 TARGET		:=	$(MAKEFILE).bin
-TARGETS		:= ../loader/data/$(TARGET)
+TARGETS		:= ../loader/data/$(TARGET) ../ps3load/data/$(TARGET)
 BUILD		:=	$(MAKEFILE)/build
 DATA		:=	$(MAKEFILE)/data
 LINKFILE	:=	common/kammy.x
